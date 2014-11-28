@@ -37,19 +37,25 @@
         <div class="container">
             <div class="header">
                 <ul class="nav nav-pills pull-right">
-                    <li class="active"><a href="#">Início</a></li>
-                    <li><a href="#">Sobre</a></li>
+                    <?php
+                    $url_home = $this->url('home');
+                    $url_sobre = $this->url('sobre');
+                    ?>
+                    <li <?php echo $this->menuAtivo($url_home);?>>
+                        <a href="<?php echo $url_home; ?>">Início</a></li>
+                    <li <?php echo $this->menuAtivo($url_sobre);?>>
+                        <a href="<?php echo $url_sobre; ?>">Sobre</a></li>
                 </ul>
                 <h3 class="text-muted"><?php echo $NAME_APPLICATION; ?></h3>
             </div>
-
+            <?php echo $this->message(); ?>
             <div class="row marketing">
                 <?php echo $this->content; ?>
             </div>
 
             <div class="footer">
                 <p class="muted credit pull-left">Company <a href="">© 2013</a></p>
-                <p class="muted credit pull-right">Desenvolvido por <a href="http://igorrocha.com.br">Igor Rocha</a>.</p>
+                <p class="muted credit pull-right">Desenvolvido por <a href="http://tutorialzf2.local.br">Everton Luis Esteves</a>.</p>
             </div>
         </div>
 
@@ -59,6 +65,7 @@
                 ->headScript()
                 ->prependFile($this->basePath() . '/js/bootstrap.min.js')
                 ->prependFile($this->basePath() . '/js/jquery.min.js')
+                ->prependFile($this->basePath() . '/js/scripts.js')
                 ->prependFile($this->basePath() . '/js/respond.min.js', 'text/javascript', array('conditional' => 'lt IE 9',))
                 ->prependFile($this->basePath() . '/js/html5shiv.js', 'text/javascript', array('conditional' => 'lt IE 9',))
         ;
