@@ -7,15 +7,15 @@
     <div class="panel-body">
         <dl class="dl-horizontal">
             <dt>Nome:</dt>
-            <dd><?php echo $this->form["nome"]; ?></dd>
+            <dd><?php echo $this->escapeHtml($this->form["nome"]); ?></dd>
             <dt>Telefone Principal:</dt>
-            <dd><?php echo $this->form["telefone_principal"]; ?></dd>
+            <dd><?php echo $this->escapeHtml($this->form["telefone_principal"]); ?></dd>
             <dt>Telefone Secundario:</dt>
-            <dd><?php echo $this->form["telefone_secundario"]; ?></dd>
+            <dd><?php echo $this->escapeHtml($this->form["telefone_secundario"]); ?></dd>
             <dt>Data Criação:</dt>
-            <dd><?php echo $this->form["data_criacao"]; ?></dd>
+            <dd><?php echo $this->escapeHtml($this->form["createdAt"]); ?></dd>
             <dt>Data Atualização:</dt>
-            <dd><?php echo $this->form["data_atualizacao"]; ?></dd>
+            <dd><?php echo $this->escapeHtml($this->form["updateAt"]); ?></dd>
         </dl>
     </div>
     <div class="panel-footer">

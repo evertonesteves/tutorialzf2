@@ -1,6 +1,14 @@
 <?php
 namespace Contato;
 
+// import ModelContato
+use Contato\Model\Contato,
+    Contato\Model\ContatoTable;
+
+// import ZendDb
+use Zend\Db\ResultSet\ResultSet,
+    Zend\Db\TableGateway\TableGateway;
+
 class Module
 {
     public function getConfig()
@@ -36,6 +44,29 @@ class Module
                     return new View\Helper\Message($sm->getServiceLocator()->get('ControllerPluginManager')->get('flashmessenger'));
                 }
             ),
+        );
+    }
+    
+    public function getServiceConfig()
+    {
+        return array(
+            'factories' => array(
+                'ContatoTableGateway' => function ($sm)
+                {
+                    //Obtendo o Adapter através do ServiceManager
+                    $adapter = $sm->get('\Zend\Db\Adapter\Adapter');
+                    //Configura ResultSet com o Model Contato
+                    $resultSetPrototype = new ResultSet();
+                    $resultSetPrototype->setArrayObjectPrototype(new Contato());
+                    //Retorna TabbleGateway configurado para o Model Contato
+                    return new TableGateway('contatos', $adapter, NULL, $resultSetPrototype);
+                },
+                'ModelContato' => function($sm)
+                {
+                    //Retorna a instância do Model ContatoTable
+                    return new ContatoTable($sm->get('ContatoTableGateway'));
+                }
+            )
         );
     }
 }
