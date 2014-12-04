@@ -5,8 +5,11 @@ namespace Contato\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 // import Zend\View
 use Zend\View\Model\ViewModel;
-// import Model\ContatoTable
-use Contato\Model\ContatoTable;
+// import Model
+use Contato\Model\ContatoTable,
+    Contato\Model\Contato;
+// import Contato\Form
+use Contato\Form\ContatoForm;
 
 class ContatosController extends AbstractActionController
 {
@@ -23,38 +26,53 @@ class ContatosController extends AbstractActionController
     // GET /contatos/novo
     public function novoAction()
     {
+        return array('formContato' => new ContatoForm());
     }
 
     // POST /contatos/adicionar
     public function adicionarAction()
     {
-        // obtém a requisição
+         // obtém a requisição
         $request = $this->getRequest();
 
         // verifica se a requisição é do tipo post
-        if ($request->isPost()) {
-            // obter e armazenar valores do post
-            $postData = $request->getPost()->toArray();
-            $formularioValido = true;
+        if ($request->isPost()) 
+        {
+            // instancia formulário
+            $form = new ContatoForm();
+            // instancia model contato com regras de filtros e validações
+            $modelContato = new Contato();
+            // passa para o objeto formulário as regras de viltros e validações
+            // contidas na entity contato
+            $form->setInputFilter($modelContato->getInputFilter());
+            // passa para o objeto formulário os dados vindos da submissão 
+            $form->setData($request->getPost());
 
             // verifica se o formulário segue a validação proposta
-            if ($formularioValido) {
+            if ($form->isValid()) 
+            {
                 // aqui vai a lógica para adicionar os dados à tabela no banco
-                // 1 - solicitar serviço para pegar o model responsável pela adição
-                // 2 - inserir dados no banco pelo model
+                // 1 - popular model com valores do formulário
+                $modelContato->exchangeArray($form->getData());
+                // 2 - persistir dados do model para banco de dados
+                $this->getContatoTable()->save($modelContato);
+
                 // adicionar mensagem de sucesso
-                $this->flashMessenger()->addSuccessMessage("Contato criado com sucesso");
+                $this->flashMessenger()
+                        ->addSuccessMessage("Contato criado com sucesso!");
 
                 // redirecionar para action index no controller contatos
                 return $this->redirect()->toRoute('contatos');
             } 
             else 
-            {
-                // adicionar mensagem de erro
-                $this->flashMessenger()->addErrorMessage("Erro ao criar contato");
+            { 
+                // em caso da validação não seguir o que foi definido
 
-                // redirecionar para action novo no controllers contatos
-                return $this->redirect()->toRoute('contatos', array('action' => 'novo'));
+                // renderiza para action novo com o objeto form populado,
+                // com isso os erros serão tratados pelo helpers view
+                return (new ViewModel())
+                                ->setVariable('formContato', $form)
+                                ->setTemplate('contato/contatos/novo');
             }
         }
     }
@@ -78,17 +96,10 @@ class ContatosController extends AbstractActionController
         // 1 - solicitar serviço para pegar o model responsável pelo find
         // 2 - solicitar form com dados desse contato encontrado
         // formulário com dados preenchidos
-        /*
-        $form = array(
-            'nome' => 'Igor Rocha',
-            "telefone_principal" => "(085) 8585-8585",
-            "telefone_secundario" => "(085) 8585-8585",
-            "data_criacao" => "02/03/2013",
-            "data_atualizacao" => "02/03/2013",
-        );*/
+        
         try
         {
-            $form = (array)  $this->getContatoTable()->find($id);
+            $contato = $this->getContatoTable()->find($id);
         } 
         catch (Exception $ex) 
         {
@@ -98,7 +109,7 @@ class ContatosController extends AbstractActionController
             $this->redirect()->toRoute('contatos');
         }
         //Retorna os dados para a View
-        return array('id' => $id, 'form' => $form);
+        return ['contato' => $contato];
     }
 
     // GET /contatos/editar/id
@@ -117,26 +128,27 @@ class ContatosController extends AbstractActionController
             return $this->redirect()->toRoute('contatos');
         }
 
-        // aqui vai a lógica para pegar os dados referente ao contato
-        // 1 - solicitar serviço para pegar o model responsável pelo find
-        // 2 - solicitar form com dados desse contato encontrado
-
-        // formulário com dados preenchidos
-        
-        try
+        try 
         {
-            $form = (array)  $this->getContatoTable()->find($id);
+            // variável com objeto contato localizado
+            $contato = (array) $this->getContatoTable()->find($id);
         } 
-        catch (Exception $ex) 
+        catch (Exception $exc) 
         {
-            //Adiciona mensagem
-            $this->flashMessenger()->addErrorMessage($ex->getMessage());
-            //Redireciona para action Index
-            $this->redirect()->toRoute('contatos');
+            // adicionar mensagem
+            $this->flashMessenger()->addErrorMessage($exc->getMessage());
+
+            // redirecionar para action index
+            return $this->redirect()->toRoute('contatos');
         }
 
+        // objeto form contato vazio
+        $form = new ContatoForm();
+        // popula objeto form contato com objeto model contato
+        $form->setData($contato);
+
         // dados eviados para editar.phtml
-        return array('id' => $id, 'form' => $form);
+        return ['formContato' => $form];
     }
 
      // PUT /contatos/editar/id
@@ -146,30 +158,42 @@ class ContatosController extends AbstractActionController
         $request = $this->getRequest();
 
         // verifica se a requisição é do tipo post
-        if ($request->isPost()) {
-            // obter e armazenar valores do post
-            $postData = $request->getPost()->toArray();
-            $formularioValido = true;
+        if ($request->isPost()) 
+        {
+            // instancia formulário
+            $form = new ContatoForm();
+            // instancia model contato com regras de filtros e validações
+            $modelContato = new Contato();
+            // passa para o objeto formulário as regras de viltros e validações
+            // contidas na entity contato
+            $form->setInputFilter($modelContato->getInputFilter());
+            // passa para o objeto formulário os dados vindos da submissão 
+            $form->setData($request->getPost());
 
             // verifica se o formulário segue a validação proposta
-            if ($formularioValido) {
-                // aqui vai a lógica para editar os dados à tabela no banco
-                // 1 - solicitar serviço para pegar o model responsável pela atualização
-                // 2 - editar dados no banco pelo model
+            if ($form->isValid()) 
+            {
+                // aqui vai a lógica para atualizar os dados à tabela no banco
+                // 1 - popular model com valores do formulário
+                $modelContato->exchangeArray($form->getData());
+                // 2 - atualizar dados do model para banco de dados
+                $this->getContatoTable()->update($modelContato);
 
                 // adicionar mensagem de sucesso
-                $this->flashMessenger()->addSuccessMessage("Contato editado com sucesso");
+                $this->flashMessenger()
+                        ->addSuccessMessage("Contato editado com sucesso");
 
                 // redirecionar para action detalhes
-                return $this->redirect()->toRoute('contatos', array("action" => "detalhes", "id" => $postData['id'],));
+                return $this->redirect()->toRoute('contatos', array("action" => "detalhes", "id" => $modelContato->id));
             } 
             else 
-            {
-                // adicionar mensagem de erro
-                $this->flashMessenger()->addErrorMessage("Erro ao editar contato");
-
-                // redirecionar para action editar
-                return $this->redirect()->toRoute('contatos', array('action' => 'editar', "id" => $postData['id'],));
+            { 
+                // em caso da validação não seguir o que foi definido
+                // renderiza para action editar com o objeto form populado,
+                // com isso os erros serão tratados pelo helpers view
+                return (new ViewModel())
+                                ->setVariable('formContato', $form)
+                                ->setTemplate('contato/contatos/editar');
             }
         }
     }
@@ -181,7 +205,8 @@ class ContatosController extends AbstractActionController
         $id = (int) $this->params()->fromRoute('id', 0);
 
         // se id = 0 ou não informado redirecione para contatos
-        if (!$id) {
+        if (!$id) 
+        {
             // adicionar mensagem de erro
             $this->flashMessenger()->addMessage("Contato não encotrado");
 
@@ -191,7 +216,7 @@ class ContatosController extends AbstractActionController
             // aqui vai a lógica para deletar o contato no banco
             // 1 - solicitar serviço para pegar o model responsável pelo delete
             // 2 - deleta contato
-
+             $this->getContatoTable()->delete($id);
             // adicionar mensagem de sucesso
             $this->flashMessenger()->addSuccessMessage("Contato de ID $id deletado com sucesso");
 

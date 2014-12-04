@@ -10,3 +10,13 @@ $(function () {
         // gerar efeito para o elemento encontrado na pagina
         corpo_alert.fadeOut().fadeIn().fadeOut().fadeIn();
 });
+/**
+ * mask input
+ */
+$(function (){
+    // mascara para telefone: (xx)xxxx-xxxxx
+    $("input#inputTelefonePrincipal.form-control, input#inputTelefoneSecundario.form-control").mask("(99)9999-9999?9");
+    
+    // mascara para captcha com 12 caracteres apenas alfabéticos: xxxxxxxxxxxx
+    $("input#inputCaptcha.form-control").mask("aaaaaaaaaaaa");
+});
